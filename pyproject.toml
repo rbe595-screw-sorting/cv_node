@@ -1,0 +1,23 @@
+[project]
+name = "cv-node"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ultralytics>=8.4.215",
+    "torch==2.9.1+rocm6.4; sys_platform == 'linux'",
+    "pyrealsense2>=2.59.2.11152",
+]
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm6.4"
+#explicit = true
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-rocm", marker = "sys_platform == 'linux'" }
+]
+
+

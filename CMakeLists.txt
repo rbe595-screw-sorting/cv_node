@@ -17,7 +17,7 @@ install(
 )
 
 install(PROGRAMS
-  src/blob_detect.py
+  src/detections.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
