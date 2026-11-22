@@ -17,7 +17,7 @@ install(
 )
 
 install(PROGRAMS
-  src/detections.py
+  src/detection.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
