@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import cv2
 import numpy as np
@@ -52,7 +54,7 @@ class Detection(Node):
         self.depth = 0.1142
 
         # read variables
-        self.weights = self.get_parameter("weights").value
+        self.weights = self.get_parameter("model_path").value
         self.threshold = self.get_parameter("threshold").value
         self.min_length = self.get_parameter("min_length").value
         self.max_length = self.get_parameter("max_length").value
@@ -88,7 +90,7 @@ class Detection(Node):
         self.color_img = self.br.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         self.gray_img = self.br.imgmsg_to_cv2(msg, desired_encoding='gray') # potentially wrong encoding code
 
-    def get_latest_info(self, msg:CameraInfo):
+    def store_camera_info(self, msg:CameraInfo):
         ''''''
         self.cam_info = msg
 
@@ -371,4 +373,5 @@ def main(args=None):
     node.destroy_node()
     rclpy.shutdown()
 
-
+if __name__ == '__main__':
+    main()

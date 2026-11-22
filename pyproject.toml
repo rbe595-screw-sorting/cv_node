@@ -3,11 +3,13 @@ name = "cv-node"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "ultralytics>=8.4.215",
     "torch==2.9.1+rocm6.4; sys_platform == 'linux'",
     "pyrealsense2>=2.59.2.11152",
+    "pyyaml>=6.0.4",
+    "numpy<2",
 ]
 
 [[tool.uv.index]]
