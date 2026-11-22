@@ -8,6 +8,11 @@ This project uses uv, use this command to install on linux:
 ros2 run cv_node detection.py
 ```
 
+### todo list:
+- add debug for image processing
+- make points into poses (add orientation)
+- fix thresholding (maybe make adaptive somehow?)
+- 
 
 ## For AMD GPUs
 make sure the flag `HIP_VISIBLE_DEVICES=0` is set before running anything.

@@ -149,7 +149,7 @@ class Detection(Node):
         seed_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
 
         seed_mask = cv2.erode(mask, seed_kernel, iterations=2)
-        seed_mask = cv2.morphologyEx(seed_mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE (5, 5)))
+        seed_mask = cv2.morphologyEx(seed_mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
 
         number_of_seeds, seed_markers = cv2.connectedComponents(seed_mask, connectivity=8)
 
@@ -282,8 +282,8 @@ class Detection(Node):
 
     def pixel_to_world(self, u, v, depth_m, camera_frame="camera_color_optical_frame", world_frame="world"):
 
-        # if this does not work, try self.cam_info.k
-        K = np.asarray(self.cam_info.r, dtype=float)
+        K = np.asarray(self.cam_info.r, dtype=float) # reshape to be 2D
+        K = K.reshape(2, 4)
 
         # back-project pixel (u, v) into the camera optical frame
         xyz_camera = depth_m * np.linalg.inv(K) @ np.array([u, v, 1.0])
@@ -306,6 +306,8 @@ class Detection(Node):
 
     def rviz_debug(self, point:PointStamped):
         '''add points to the image to see where it thinks screws are'''
+
+        # world marker
         w_marker = Marker()
         w_marker.header.frame_id = "base_link"
         w_marker.id = 0
@@ -324,10 +326,17 @@ class Detection(Node):
 
         w_marker.pose.position.x = point.point.x
         w_marker.pose.position.y = point.point.y
-        w_marker.pose.position.z = point.point.z
+        w_marker.pose.position.z = 0.0
 
         self.world_pt_debug.publish(w_marker)
-        
+
+        # debug image
+
+    def img_debug(self, image):
+
+        img_msg = self.br.cv2_to_imgmsg(image)
+        self.debug_cv.publish(img_msg)
+
 
     def process_image(self):
         """main image processing functions service"""
@@ -386,17 +395,17 @@ class Detection(Node):
             #     f"brightness={metrics['brightness']:.2f}"
             # )
     
-            # cv2.drawContours(output, [contour], -1, (255, 255, 255), 1)
+            cv2.drawContours(output, [contour], -1, (255, 255, 255), 1)
     
-            # cv2.drawMarker(output, centroid, (0, 255, 0), cv2.MARKER_CROSS, 12, 2)
+            cv2.drawMarker(output, centroid, (0, 255, 0), cv2.MARKER_CROSS, 12, 2)
             #number += 1
     
 
         # print(ratios)
         # print(brightnesses)
 
-        
-       # cv2.imwrite("watershed_result.png", output)
+        # publish debug image
+        self.img_debug(output)
 
         
 def main(args=None):
