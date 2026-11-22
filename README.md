@@ -1,10 +1,13 @@
 # cv_node
 ROS 2 Node for detecting objects using blob detection and transforming the coordinates into robot frame and possibly classifying them as well.
 
-## Detecting the Screws
+## Setup
+This project uses uv, use this command to install on linux:
+
 ```bash
 ros2 run cv_node detection.py
 ```
+
 
 ## For AMD GPUs
 make sure the flag `HIP_VISIBLE_DEVICES=0` is set before running anything.

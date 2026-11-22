@@ -11,7 +11,7 @@ from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge
 from rclpy.duration import Duration
 from rclpy.node import Node
-
+from visualization_msgs.msg import Marker
 import tf2_ros
 import tf2_geometry_msgs
 from geometry_msgs.msg import PointStamped
@@ -27,6 +27,9 @@ class Detection(Node):
         # TEMPORARY 
         self.screw_world_pts = self.create_publisher(PointStamped, '/screw_location', 10)
         self.create_timer(1.0, self.process_image)
+        self.debug_cv = self.create_publisher(Image, '/debug/image_proc', 10)
+        self.debug_yolo = self.create_publisher(Image, '/debug/yolo', 10)
+        self.world_pt_debug = self.create_publisher(Marker, '/debug/world_pts', 10)
 
         # openCV thresholding function params
         self.declare_parameter('threshold', 80)
@@ -88,14 +91,14 @@ class Detection(Node):
         '''get the latest frame from the image message publisher and save as openCV member variable'''
         self.latest_img_msg = msg
         self.color_img = self.br.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        self.gray_img = self.br.imgmsg_to_cv2(msg, desired_encoding='gray') # potentially wrong encoding code
+        self.gray_img = self.br.imgmsg_to_cv2(msg, desired_encoding='mono8') # potentially wrong encoding code
 
     def store_camera_info(self, msg:CameraInfo):
         ''''''
         self.cam_info = msg
 
     # image processing helper functions
-    def intersection_over_union(box_a, box_b):
+    def intersection_over_union(self, box_a, box_b):
         '''calculates intersection over union of two bboxes'''
         ax, ay, aw, ah = box_a
         bx, by, bw, bh = box_b
@@ -300,6 +303,23 @@ class Detection(Node):
         except Exception as exc:
             self.get_logger().error(f"TF transform failed: {exc}")
             return None
+
+    def rviz_debug(self, point:PointStamped):
+        '''add points to the image to see where it thinks screws are'''
+        w_marker = Marker()
+        w_marker.header.frame_id = "base_link"
+        w_marker.id = 0
+
+        w_marker.color.a = 1.0
+        w_marker.color.r = 0.0
+        w_marker.color.g = 1.0
+        w_marker.color.b = 0.0
+
+        w_marker.pose.position.x = point.point.x
+        w_marker.pose.position.y = point.point.y
+        w_marker.pose.position.z = point.point.z
+
+        self.world_pt_debug.publish(w_marker)
         
 
     def process_image(self):
@@ -331,7 +351,7 @@ class Detection(Node):
         number = 1
 
         for detection in detections:
-            metrics = self.calculate_metrics(detection, gray, color_img)
+            metrics = self.calculate_metrics(detection, gray)
     
             if metrics is None:
                 continue
@@ -345,6 +365,10 @@ class Detection(Node):
             world_point = self.pixel_to_world(centroid[0], centroid[1],  self.depth, camera_frame="camera_color_optical_frame", world_frame="base_link")
 
             self.screw_world_pts.publish(world_point)
+
+            # debug for rviz
+            self.rviz_debug(world_point)
+            
             self.get_logger().info("published screw pose")
 
             # logging or publisher...
