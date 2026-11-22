@@ -305,6 +305,11 @@ class Detection(Node):
     def process_image(self):
         """main image processing functions service"""
 
+        # error handling
+        if self.latest_img_msg == None or self.cam_info == None:
+            self.get_logger().warn("no image message or camera info found")
+            return
+
         # get image and convert into gray and color images
         color_img = self.color_img
         gray = self.gray_img
